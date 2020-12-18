@@ -1,0 +1,64 @@
+.data
+	hello: .asciiz "HEllo"
+	numbers: .byte 0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xa
+	plus: .asciiz "+"
+	equals: .asciiz " = "
+	correctanswer: "correct"
+	incorrectanswer: "incorrect"
+	
+.text
+	li $v0, 4
+	la $a0, hello
+	syscall
+	
+	li $t1, 0
+	li $s4, 0
+	li $t2, 5
+	
+nextques:
+	li $v0, 1
+	lb $a0, numbers($t1)
+	move $s2, $a0
+	syscall
+	
+	li $v0, 4
+	la $a0, plus
+	syscall
+	
+	addi $t1, $t1, 1
+	
+	li $v0, 1
+	lb $a0, numbers($t1)
+	add $t3, $a0, $s2
+	syscall
+	
+	addi $t1, $t1, 1
+	li $v0, 4
+	la $a0, equals
+	syscall
+	
+	li $v0, 5
+	syscall
+	move $s1, $v0
+	addi $s4, $s4, 1
+	
+	check:
+	beq $t3, $s1, printcorrect
+	
+	printincorrect:
+	li $v0, 4
+	la $a0, incorrectanswer
+	syscall
+	
+	checknextquestion:
+	bne $s4, $t2, nextques
+	
+	li $v0, 10
+	syscall
+	
+	printcorrect:
+	li $v0, 4
+	la $a0, correctanswer
+	syscall
+	j checknextquestion
+	
