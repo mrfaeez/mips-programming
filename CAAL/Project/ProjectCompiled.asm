@@ -1,3 +1,14 @@
+#CSC3402 COMPUTER ARCHITECTURE AND ASSEMBLY LANGUAGE
+#SECTION 1 SEMESTER 1 2020/2021
+#SMART REFRIGERATOR SYSTEM
+#GROUP MEMBERS
+#1)Muhammad Azri Bin abdul Rahim 1812031
+#2)Muhammad Owish bin Muhammad Rizal 1816401
+#3)Faeez Zimam 1819541
+#4) Wan Muhammad Hafizam Bin Fauzi 1810869
+
+
+
 .data
 	#AUTHENTICATION VARIABLES
 	pass_welcome: .asciiz "\nWelcome to Smart Register System!\n"
@@ -9,7 +20,7 @@
     
     	#BUTTON SENSOR VARIABLES
     	btn_Prompt: .asciiz "\nDetecting button state......... (0 or 1)\n"
-    	btn_lightoffPrompt: .asciiz "Door is closed! Light turned off"
+    	btn_lightoffPrompt: .asciiz "Door is closed! Light turned off\n\nExiting......"
     	btn_lightonPrompt: .asciiz "Door is opened! Light turned on"
     	btn_doorAlert: .asciiz "Door is opened for more than 1 minute!"
     	btn_State: .space 2
@@ -38,12 +49,12 @@
 	
 	hu_base_temp: .word 2
    	hu_min_temp: .word -20   
-   	hu_max_temp: .word 4
+   	hu_max_temp: .word 2
    	hu_msgt_prompt: .asciiz "\nSet new temperature? (yes(1) or no(0): "
-   	hu_msgt_new: .asciiz "\nEnter preferred refrigerator temperature(4 to -20): "
+   	hu_msgt_new: .asciiz "\nEnter preferred refrigerator temperature(2 to -20): "
    	hu_msgt_success: .asciiz "\nThe temperature has been regulated"
    	hu_msgt_change: .asciiz "\nThe temperature has been changed  to = "  
-   	hu_msgt_initial: .asciiz "\nThe initial temperature is 4 degress celcisus and -18 degrees celcisus(for the freezer)"
+   	hu_msgt_initial: .asciiz "\nThe initial temperature is 2 degress celcisus and -18 degrees celcisus(for the freezer)"
    	hu_msgt_invalid: .asciiz "\nInvalid refridgerator temperature. Range is from 4 to -20"
    	hu_msgt_no : .asciiz "Temperature remains at base temperature 4 degrees celsius"
    	hu_getyesno: .space 8
@@ -78,17 +89,17 @@
 		
 		li	$s0, 0						#s0 is used to compare the button state
 	
-		la	$a0, btn_Prompt
+		la	$a0, btn_Prompt					#prompt user to enter button state
 		jal	BtnPrintText
 		syscall
 	
-		li	$v0,5
+		li	$v0,5						#get button state input from user
 		syscall
 		move 	$s2, $v0
 		sb	$s2, btn_State
 	
-		beq	$s0, $s2, BtnDoorOpened
-		bne	$s0, $s2, BtnDoorClosed
+		beq	$s0, $s2, BtnDoorOpened				#if button state is 0, means door is open, light will turn on and can proceed to inventory
+		bne	$s0, $s2, BtnDoorClosed				#if other than 0, door is closed, light will turn off and exit the system
 	
 		j exit
 	
@@ -131,19 +142,19 @@
 	#START HUMIDITY SENSOR
 	HUsetNewTemp:
 	
- 		li $v0, 4		 	#ask user if they want to change temperature
+ 		li $v0, 4		 				#ask user if they want to change temperature
  		la $a0, hu_msgt_prompt
  		syscall
 
- 		la $v0, hu_getyesno 		#get user input either yes or no
+ 		la $v0, hu_getyesno 					#get user input either yes or no
 		li $v0, 5
  		syscall
  
  		add $t1, $v0,$zero
- 		la $a0, hu_base_temp  		# set base temperature
-		beq $t1, 0, HUtnochange		#if user does not want to change branch to tnochange
+ 		la $a0, hu_base_temp  					# set base temperature
+		beq $t1, 0, HUtnochange					#if user does not want to change branch to tnochange
 		syscall
-		j HUtYes				#if user wants to change jump to yes
+		j HUtYes						#if user wants to change jump to yes
 	
 	#END HUMDITY SENSOR
 
@@ -190,7 +201,7 @@
     
     	#PROCEDURE FOR BUTTON
     
-    	BtnDoorClosed:
+    	BtnDoorClosed:							#if button is pressed, it means door is closed and light will turn off and the system will exit
 	
 		la	$a0, btn_lightoffPrompt
 		jal	BtnPrintText
@@ -200,7 +211,7 @@
 	
 	BtnDoorOpened:
 	
-		la	$a0, btn_lightonPrompt
+		la	$a0, btn_lightonPrompt				#if button is not pressed, it means door is open and user can proceed to update inventory
 		jal	BtnPrintText
 		syscall
 	
@@ -216,25 +227,25 @@
 	
 	#PROCEDURE FOR IR 
 	
-	IrDisplayInventory: 		#print elements in inventory array  
+	IrDisplayInventory: 						#print elements in inventory array  
  
         	#for() loop 
 		bgt $s2, $s3, IrMain
-		sll $t7, $s2, 2		#t4= 4xi
-		addu $t7, $t7, $s0 	#memory location of inventory array ----> 1000+4 = 1004
-		sll $t8,  $s2, 2	#loop for quantity
+		sll $t7, $s2, 2						#t4= 4xi
+		addu $t7, $t7, $s0 					#memory location of inventory array ----> 1000+4 = 1004
+		sll $t8,  $s2, 2					#loop for quantity
 		addu $t8, $t8, $s1
 	
-		li $v0, 4		#print index element in array
+		li $v0, 4						#print index element in array
 		lw $a0, 0($t7)
         	syscall
         
-        	li $v0, 1		#print index element in array
+        	li $v0, 1						#print index element in array
 		lw $a0, 0($t8)
         	syscall
         
         	addi $s2, $s2, 1      
-        	j IrDisplayInventory	#loop array to other index element until bgt instruction complete
+        	j IrDisplayInventory					#loop array to other index element until bgt instruction complete
 
 	IrChangeItem:
 	
@@ -245,7 +256,7 @@
 		la $s0, ir_inventory
 		la $s1, ir_quantity
 	
-		li $v0, 4		 #input +value for add,-value for sub
+		li $v0, 4		 				#input +value for add,-value for sub
 		lw $a0, 0($s0)
         	syscall        
         	li $v0,5
@@ -297,43 +308,43 @@
 	
 	HUtYes:
 	
-       		li $v0, 4			#prompt user to enter new temperature			
+       		li $v0, 4						#prompt user to enter new temperature			
        		la $a0, hu_msgt_new
        		syscall  
        
-       		j HUgetNewTemp			#jumb to getNewTemp to handle user input
+       		j HUgetNewTemp						#jumb to getNewTemp to handle user input
        
        
       	HUgetNewTemp:
 
-        	li $v0, 5			#takes user input for the temperature
+        	li $v0, 5						#takes user input for the temperature
         	syscall
         
-       		lw $t4, hu_min_temp			#set min temperature
-       		lw $t6, hu_max_temp			# set max temp
+       		lw $t4, hu_min_temp					#set min temperature
+       		lw $t6, hu_max_temp					# set max temp
        
-       		slt $t1, $t4, $v0		#error handling for the range of temperature
+       		slt $t1, $t4, $v0					#error handling for the range of temperature
        		beq $t1,$zero, HUtInvalid
        		slt $t1, $v0,$t6
        		beq $t1,$zero, HUtInvalid
        
-       		move $t6,$v0			#move the temperature value to temporary register6
+       		move $t6,$v0						#move the temperature value to temporary register6
        
        		li $v0, 4
-       		la $a0, hu_msgt_success		#alert user of the temperature change
+       		la $a0, hu_msgt_success					#alert user of the temperature change
        		syscall
 
 	HUprintTemp:
 
-		li $v0,4			#notify the user of the new temp value
+		li $v0,4						#notify the user of the new temp value
 		la $a0 , hu_msgt_change
 		syscall
 	
-		li $v0, 1			#print current changed value
+		li $v0, 1						#print current changed value
 		move $a0,$t6
 		syscall
 		
-		li $v0, 4 			#notify user that there is no temperature change
+		li $v0, 4 						#notify user that there is no temperature change
 		la $a0, hu_msgt_exit	
 		syscall
 	
@@ -341,11 +352,12 @@
 	
 	
 	HUtnochange:
-		li $v0, 4 			#notify user that there is no temperature change
+	
+		li $v0, 4 						#notify user that there is no temperature change
 		la $a0, hu_msgt_no	
 		syscall
 		
-		li $v0, 4 			#notify user that there is no temperature change
+		li $v0, 4 						#notify user that there is no temperature change
 		la $a0, hu_msgt_exit	
 		syscall
 		
@@ -353,7 +365,8 @@
 	
 	
 	HUtInvalid:
-		li $v0, 4			#notify the user that the user input was invalid(out of range)
+	
+		li $v0, 4						#notify the user that the user input was invalid(out of range)
 		la $a0, hu_msgt_invalid
 		syscall
 	
